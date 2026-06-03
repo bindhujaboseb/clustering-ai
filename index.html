@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clustering in AI – Student Activities</title>
+<style>
+/* --- system font stack, no CDN needed --- */
+:root{
+  --navy:#1a3a4a;--teal:#0d9488;--teal-lt:#e0f5f3;
+  --gold:#f59e0b;--gold-lt:#fef3c7;--coral:#ef4444;
+  --green:#22c55e;--green-lt:#dcfce7;
+  --purple:#8b5cf6;--purple-lt:#ede9fe;
+  --bg:#f0f9ff;--card:#fff;--text:#1a3a4a;
+  --muted:#64748b;--border:#e2e8f0;
+  --r:16px;--sh:0 4px 24px rgba(13,148,136,.10);
+  --font:'Segoe UI',Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;top:-120px;right:-120px;width:380px;height:380px;background:radial-gradient(circle,rgba(13,148,136,.12) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-80px;left:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(245,158,11,.10) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+.app-header{background:var(--navy);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(26,58,74,.18);}
+.logo{font-size:1.15rem;font-weight:900;color:#fff;} .logo span{color:var(--gold);}
+.progress-wrap{display:flex;align-items:center;gap:12px;flex:1;margin:0 32px;}
+.progress-label{font-size:.78rem;color:rgba(255,255,255,.7);white-space:nowrap;font-weight:700;}
+.progress-bar-outer{flex:1;height:8px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:99px;transition:width .5s;}
+.step-dots{display:flex;gap:6px;}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.5);font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.step-dot.active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+.step-dot.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+.container{max-width:860px;margin:0 auto;padding:40px 20px 80px;position:relative;z-index:1;}
+.screen{display:none;} .screen.active{display:block;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:32px;margin-bottom:24px;border:1.5px solid var(--border);}
+.card-title{font-size:1.4rem;font-weight:900;color:var(--navy);margin-bottom:6px;}
+.card-sub{font-size:.9rem;color:var(--muted);margin-bottom:22px;font-weight:600;}
+
+.welcome-hero{background:linear-gradient(135deg,var(--navy) 60%,#0d9488 100%);border-radius:24px;padding:52px 40px 44px;color:#fff;text-align:center;position:relative;overflow:hidden;margin-bottom:28px;}
+.welcome-hero::before{content:'AI';position:absolute;top:-10px;right:30px;font-size:120px;opacity:.05;line-height:1;font-weight:900;}
+.welcome-hero h1{font-size:2.2rem;font-weight:900;margin-bottom:10px;line-height:1.1;}
+.welcome-hero h1 span{color:var(--gold);}
+.welcome-hero > p{color:rgba(255,255,255,.78);font-size:1rem;font-weight:600;margin-bottom:32px;}
+.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;}
+.badge{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:#fff;border-radius:99px;padding:6px 16px;font-size:.8rem;font-weight:700;}
+.form-group{margin-bottom:18px;text-align:left;}
+.form-group label{display:block;font-size:.85rem;font-weight:800;color:rgba(255,255,255,.8);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;}
+.form-group input,.form-group select{width:100%;padding:14px 18px;border:2px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;font-family:var(--font);font-weight:700;outline:none;transition:border-color .2s;}
+.form-group input::placeholder{color:rgba(255,255,255,.45);}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
+.form-group select option{background:var(--navy);color:#fff;}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:10px;font-family:var(--font);font-size:1rem;font-weight:800;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--gold);color:var(--navy);box-shadow:0 4px 14px rgba(245,158,11,.35);}
+.btn-primary:hover{transform:translateY(-2px);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.btn-teal{background:var(--teal);color:#fff;}  .btn-teal:hover{transform:translateY(-2px);}
+.btn-navy{background:var(--navy);color:#fff;}  .btn-navy:hover{opacity:.9;}
+.btn-outline{background:transparent;border:2px solid var(--teal);color:var(--teal);}
+.btn-outline:hover{background:var(--teal);color:#fff;}
+.btn-lg{padding:16px 36px;font-size:1.1rem;} .btn-sm{padding:8px 16px;font-size:.85rem;}
+
+.tag{display:inline-flex;align-items:center;gap:8px;background:var(--teal-lt);color:var(--teal);font-size:.8rem;font-weight:800;padding:5px 14px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+.tag.gold{background:var(--gold-lt);color:#92400e;} .tag.purple{background:var(--purple-lt);color:var(--purple);} .tag.green{background:var(--green-lt);color:#15803d;}
+
+.info-box{background:linear-gradient(135deg,var(--teal-lt),#f0fdf4);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:18px;font-size:.88rem;font-weight:600;color:var(--navy);line-height:1.6;}
+.info-box.gold{background:var(--gold-lt);border-color:var(--gold);}
+
+/* activity 1 */
+.emoji-pool{display:flex;flex-wrap:wrap;gap:10px;padding:20px;background:#f8fafc;border-radius:12px;border:2px dashed var(--border);min-height:80px;margin-bottom:20px;}
+.emoji-chip{background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px 16px;font-size:1.4rem;cursor:pointer;transition:all .2s;user-select:none;box-shadow:0 2px 6px rgba(0,0,0,.06);display:flex;align-items:center;gap:6px;}
+.emoji-chip:hover{transform:scale(1.1);border-color:var(--teal);}
+.emoji-chip.selected{border-color:var(--gold);background:var(--gold-lt);box-shadow:0 0 0 3px rgba(245,158,11,.25);}
+.emoji-chip.placed{opacity:.3;pointer-events:none;}
+.cluster-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.cluster-box{background:#f8fafc;border:2px dashed var(--border);border-radius:12px;padding:14px;min-height:110px;transition:all .2s;cursor:pointer;}
+.cluster-box:hover{border-color:var(--teal);background:#f0fdfb;}
+.cluster-box.has-items{border-style:solid;border-color:var(--teal);background:var(--teal-lt);}
+.cluster-items{display:flex;flex-wrap:wrap;gap:6px;}
+.placed-chip{background:#fff;border:1.5px solid var(--teal);border-radius:8px;padding:5px 11px;font-size:1.1rem;cursor:pointer;transition:all .15s;}
+.placed-chip:hover{background:#fee2e2;border-color:var(--coral);}
+.cluster-name-input{width:100%;padding:7px 12px;border:2px solid var(--border);border-radius:8px;font-family:var(--font);font-size:.85rem;font-weight:700;background:#fff;color:var(--text);outline:none;margin-bottom:8px;transition:border-color .2s;}
+.cluster-name-input:focus{border-color:var(--teal);}
+
+/* activity 2 */
+.items-bank{display:flex;flex-wrap:wrap;gap:8px;padding:16px;background:#f8fafc;border-radius:12px;border:2px dashed var(--border);margin-bottom:18px;min-height:60px;}
+.item-chip{background:var(--navy);color:#fff;border-radius:8px;padding:7px 14px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;user-select:none;border:2px solid transparent;}
+.item-chip:hover{background:var(--teal);}
+.item-chip.selected{background:var(--gold);color:var(--navy);border-color:#d97706;box-shadow:0 0 0 3px rgba(245,158,11,.3);}
+.item-chip.placed{opacity:.3;pointer-events:none;}
+.sort-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.sort-box{border-radius:12px;padding:14px;min-height:130px;cursor:pointer;}
+.sort-box.fruits{background:#fff7ed;border:2px solid #fdba74;}
+.sort-box.animals{background:var(--green-lt);border:2px solid #86efac;}
+.sort-box.supplies{background:var(--purple-lt);border:2px solid #c4b5fd;}
+.sort-box.vehicles{background:var(--teal-lt);border:2px solid #5eead4;}
+.sort-box-title{font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.sort-box.fruits .sort-box-title{color:#c2410c;}
+.sort-box.animals .sort-box-title{color:#15803d;}
+.sort-box.supplies .sort-box-title{color:#7c3aed;}
+.sort-box.vehicles .sort-box-title{color:#0d9488;}
+.sort-items{display:flex;flex-wrap:wrap;gap:6px;}
+.placed-item{background:rgba(255,255,255,.8);border:1.5px solid rgba(0,0,0,.12);border-radius:6px;padding:4px 10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.placed-item:hover{background:#fee2e2;}
+.score-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-lt);border:1.5px solid var(--gold);color:#92400e;border-radius:8px;padding:6px 16px;font-size:.9rem;font-weight:800;}
+
+/* activity 3 */
+.data-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:.88rem;}
+.data-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-weight:800;font-size:.8rem;}
+.data-table td{padding:9px 14px;border-bottom:1px solid var(--border);}
+.data-table tr:nth-child(even) td{background:#f8fafc;}
+.cluster-input-group{margin-bottom:14px;}
+.cluster-input-group label{display:block;font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:5px;}
+.big-textarea{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-family:var(--font);font-size:.9rem;font-weight:600;background:#f8fafc;color:var(--text);resize:vertical;min-height:70px;outline:none;transition:border-color .2s;}
+.big-textarea:focus{border-color:var(--teal);background:#fff;}
+
+/* assessment */
+.q-block{margin-bottom:26px;padding-bottom:22px;border-bottom:1.5px solid var(--border);}
+.q-block:last-child{border-bottom:none;}
+.q-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:.78rem;font-weight:800;margin-right:8px;flex-shrink:0;vertical-align:middle;}
+.q-text{font-size:.97rem;font-weight:700;color:var(--text);display:inline;line-height:1.5;}
+.opts{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+.opt-label{display:flex;align-items:center;gap:10px;padding:11px 16px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;font-size:.9rem;font-weight:600;background:#fff;}
+.opt-label:hover,.opt-label.chosen{border-color:var(--teal);background:var(--teal-lt);}
+.opt-label input[type=radio]{accent-color:var(--teal);width:17px;height:17px;flex-shrink:0;}
+.tf-row{display:flex;gap:12px;margin-top:10px;}
+.tf-btn{flex:1;padding:11px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:var(--font);font-size:.9rem;font-weight:800;cursor:pointer;transition:all .2s;}
+.tf-btn.t-btn:hover,.tf-btn.t-btn.active{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.tf-btn.f-btn:hover,.tf-btn.f-btn.active{background:#fee2e2;border-color:var(--coral);color:#b91c1c;}
+.short-ans{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;font-family:var(--font);font-size:.92rem;font-weight:600;background:#f8fafc;color:var(--text);resize:vertical;min-height:80px;outline:none;margin-top:10px;transition:border-color .2s;}
+.short-ans:focus{border-color:var(--teal);background:#fff;}
+
+/* results */
+.result-hero{background:linear-gradient(135deg,var(--teal) 0%,var(--navy) 100%);border-radius:20px;padding:44px 36px;color:#fff;text-align:center;margin-bottom:24px;}
+.big-score{font-size:5rem;font-weight:900;line-height:1;margin-bottom:8px;color:var(--gold);}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+.sum-card{background:#fff;border-radius:14px;padding:20px;text-align:center;border:1.5px solid var(--border);box-shadow:var(--sh);}
+.sum-icon{font-size:2rem;margin-bottom:6px;}
+.sum-val{font-size:1.6rem;font-weight:900;color:var(--teal);}
+.sum-lbl{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.feedback-box{background:var(--teal-lt);border:2px solid var(--teal);border-radius:12px;padding:18px 22px;margin-bottom:20px;font-size:.95rem;font-weight:600;color:var(--navy);line-height:1.6;}
+
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:20px;border-top:1.5px solid var(--border);}
+
+/* report on-screen */
+.r-hdr{background:var(--navy);color:#fff;padding:22px 28px;border-radius:12px 12px 0 0;}
+.r-hdr h2{font-size:1.3rem;font-weight:900;}
+.r-hdr p{color:rgba(255,255,255,.68);font-size:.84rem;font-weight:600;margin-top:3px;}
+.r-body{border:1.5px solid var(--border);border-top:none;border-radius:0 0 12px 12px;background:#fff;}
+.r-sec{padding:18px 24px;border-bottom:1.5px solid var(--border);}
+.r-sec:last-child{border-bottom:none;}
+.r-sec h3{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);margin-bottom:12px;}
+.r-row{display:flex;gap:8px;margin-bottom:7px;font-size:.86rem;font-weight:600;}
+.r-lbl{color:var(--muted);width:170px;flex-shrink:0;font-weight:700;}
+.r-val{color:var(--text);flex:1;}
+.r-blk{background:#f8fafc;border-radius:8px;padding:10px 14px;margin-bottom:8px;border:1.5px solid var(--border);}
+.r-blk .rq{font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.r-blk .ra{font-size:.85rem;font-weight:600;color:var(--teal);}
+.r-blk .rn{font-size:.76rem;color:var(--muted);margin-top:3px;}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:800;margin-left:5px;}
+.pill.ok{background:var(--green-lt);color:#15803d;}
+.pill.no{background:#fee2e2;color:#b91c1c;}
+.pill.part{background:var(--gold-lt);color:#92400e;}
+.r-note{padding:9px 13px;background:#f8fafc;border-radius:6px;font-size:.78rem;color:var(--muted);margin-top:6px;border:1px solid var(--border);}
+
+@media(max-width:600px){
+  .cluster-grid,.sort-grid,.sum-grid{grid-template-columns:1fr;}
+  .welcome-hero h1{font-size:1.6rem;}
+  .app-header{padding:0 14px;}
+  .progress-wrap{margin:0 12px;}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">Clustering in <span>AI</span></div>
+  <div class="progress-wrap">
+    <span class="progress-label">Progress</span>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar" style="width:0%"></div></div>
+  </div>
+  <div class="step-dots">
+    <div class="step-dot active" id="dot0">1</div><div class="step-dot" id="dot1">2</div>
+    <div class="step-dot" id="dot2">3</div><div class="step-dot" id="dot3">4</div>
+    <div class="step-dot" id="dot4">5</div><div class="step-dot" id="dot5">&#10003;</div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- SCREEN 0: WELCOME -->
+<div class="screen active" id="screen-0">
+  <div class="welcome-hero">
+    <h1>Clustering in<br><span>Artificial Intelligence</span></h1>
+    <p>Complete all 4 activities and download your report!</p>
+    <div class="badge-row">
+      <span class="badge">Grades 5-8</span>
+      <span class="badge">40-45 Minutes</span>
+      <span class="badge">4 Activities</span>
+      <span class="badge">Auto Report</span>
+    </div>
+    <div class="form-group">
+      <label>Your Full Name</label>
+      <input type="text" id="studentName" placeholder="e.g. Aisha Al Mansoori">
+    </div>
+    <div class="form-group">
+      <label>Grade</label>
+      <select id="studentGrade">
+        <option value="">-- Select Grade --</option>
+        <option>Grade 5</option><option>Grade 6</option>
+        <option>Grade 7</option><option>Grade 8</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Division</label>
+      <select id="studentDivision">
+        <option value="">-- Select Division --</option>
+        <option>A</option><option>B</option><option>C</option><option>D</option>
+        <option>E</option><option>F</option><option>G</option><option>H</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="startActivities()">Start Activities &#8594;</button>
+  </div>
+</div>
+
+<!-- SCREEN 1: EMOJI GROUPING -->
+<div class="screen" id="screen-1">
+  <div class="tag">Activity 1 of 4</div>
+  <div class="card">
+    <div class="card-title">Group the Emojis!</div>
+    <div class="card-sub">Click an emoji to select it (turns gold), then click a group box to place it. Name each group yourself!</div>
+    <div class="info-box"><strong>Think like AI!</strong> You were NOT told the group names. Look for similarities and create your own clusters.</div>
+    <p style="font-size:.82rem;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">1. Click an emoji to select:</p>
+    <div class="emoji-pool" id="emojiPool"></div>
+    <p style="font-size:.82rem;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">2. Click a group box to place it:</p>
+    <div class="cluster-grid" id="clusterGrid"></div>
+    <div class="nav-row"><div></div><button class="btn btn-teal" onclick="goTo(2)">Next Activity &#8594;</button></div>
+  </div>
+</div>
+
+<!-- SCREEN 2: SORT THE ITEMS -->
+<div class="screen" id="screen-2">
+  <div class="tag gold">Activity 2 of 4</div>
+  <div class="card">
+    <div class="card-title">Sort the Items!</div>
+    <div class="card-sub">Click an item to select it (turns gold), then click the correct group box. 20 items - 4 groups!</div>
+    <div class="info-box gold"><strong>Instructions:</strong> Each item belongs to ONE group: Fruits, Animals, School Supplies, or Vehicles.</div>
+    <p style="font-size:.82rem;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">1. Click an item to select:</p>
+    <div class="items-bank" id="itemsBank"></div>
+    <p style="font-size:.82rem;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">2. Click a group box to place it:</p>
+    <div class="sort-grid" id="sortGrid"></div>
+    <div id="act2ScoreRow" style="margin-top:16px;display:none;"><span class="score-chip">Score: <span id="act2ScoreVal"></span>/20</span></div>
+    <div class="nav-row">
+      <button class="btn btn-outline btn-sm" onclick="goTo(1)">&#8592; Back</button>
+      <button class="btn btn-teal" onclick="checkSort()">Check &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: DATA CLUSTERING -->
+<div class="screen" id="screen-3">
+  <div class="tag purple">Activity 3 of 4</div>
+  <div class="card">
+    <div class="card-title">Cluster the Student Data!</div>
+    <div class="card-sub">Look at the data and identify groups of students with similar interests.</div>
+    <div class="info-box">Look for students who share the <strong>same subject AND same sport</strong>. Those students form a cluster!</div>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Student Name</th><th>Favourite Subject</th><th>Favourite Sport</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Aisha Al Mansoori</td><td>Mathematics</td><td>Swimming</td></tr>
+        <tr><td>2</td><td>Rohan Sharma</td><td>Science</td><td>Cricket</td></tr>
+        <tr><td>3</td><td>Fatima Khalid</td><td>Art</td><td>Badminton</td></tr>
+        <tr><td>4</td><td>Karthik Nair</td><td>Science</td><td>Cricket</td></tr>
+        <tr><td>5</td><td>Hana Yamamoto</td><td>Mathematics</td><td>Swimming</td></tr>
+        <tr><td>6</td><td>Ali Hassan</td><td>Computer Science</td><td>Football</td></tr>
+        <tr><td>7</td><td>Meera Pillai</td><td>Art</td><td>Badminton</td></tr>
+        <tr><td>8</td><td>Omar Abdullah</td><td>Computer Science</td><td>Football</td></tr>
+        <tr><td>9</td><td>Priya Menon</td><td>Mathematics</td><td>Swimming</td></tr>
+        <tr><td>10</td><td>Yusuf Ahmed</td><td>Science</td><td>Cricket</td></tr>
+      </tbody>
+    </table>
+    <div id="dataInputs"></div>
+    <div style="margin-top:16px;">
+      <label style="font-size:.85rem;font-weight:800;color:var(--navy);display:block;margin-bottom:6px;">HOT Question: Could AI clustering ever be WRONG or UNFAIR? Explain:</label>
+      <textarea class="big-textarea" id="hotAnswer" placeholder="Write your thinking here..."></textarea>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-outline btn-sm" onclick="goTo(2)">&#8592; Back</button>
+      <button class="btn btn-teal" onclick="goTo(4)">Next Activity &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 4: ASSESSMENT -->
+<div class="screen" id="screen-4">
+  <div class="tag green">Activity 4 of 4 - Assessment</div>
+  <div class="card">
+    <div class="card-title">Assessment Questions</div>
+    <div class="card-sub">Answer all questions carefully.</div>
+    <h3 style="font-size:1rem;font-weight:800;color:var(--teal);margin-bottom:16px;">Part A: Multiple Choice (5 x 1 mark)</h3>
+    <div id="mcqBox"></div>
+    <h3 style="font-size:1rem;font-weight:800;color:var(--navy);margin:20px 0 14px;">Part B: True or False (3 x 1 mark)</h3>
+    <div id="tfBox"></div>
+    <h3 style="font-size:1rem;font-weight:800;color:var(--purple);margin:20px 0 14px;">Part C: Short Answer</h3>
+    <div id="saBox"></div>
+    <h3 style="font-size:1rem;font-weight:800;color:#d97706;margin:20px 0 14px;">Exit Ticket</h3>
+    <div id="etBox"></div>
+    <div class="nav-row">
+      <button class="btn btn-outline btn-sm" onclick="goTo(3)">&#8592; Back</button>
+      <button class="btn btn-primary btn-lg" onclick="submitAll()">Submit &amp; View Results</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 5: RESULTS -->
+<div class="screen" id="screen-5">
+  <div class="result-hero">
+    <div class="big-score" id="finalScore">--</div>
+    <h2 id="finalGrade">Great work!</h2>
+    <p id="finalMsg">Your clustering journey is complete.</p>
+  </div>
+  <div class="sum-grid">
+    <div class="sum-card"><div class="sum-icon">&#127919;</div><div class="sum-val" id="resMCQ">-</div><div class="sum-lbl">MCQ Score</div></div>
+    <div class="sum-card"><div class="sum-icon">&#9878;</div><div class="sum-val" id="resTF">-</div><div class="sum-lbl">True/False</div></div>
+    <div class="sum-card"><div class="sum-icon">&#128230;</div><div class="sum-val" id="resSort">-</div><div class="sum-lbl">Sort Activity</div></div>
+  </div>
+  <div class="feedback-box" id="feedbackBox"></div>
+  <button class="btn btn-teal btn-lg" onclick="goTo(6)">View Full Report &#8594;</button>
+</div>
+
+<!-- SCREEN 6: REPORT -->
+<div class="screen" id="screen-6">
+  <div id="reportOutput"></div>
+  <div class="nav-row">
+    <button class="btn btn-outline btn-sm" onclick="goTo(5)">&#8592; Back</button>
+    <button class="btn btn-primary btn-lg" id="dlBtn" onclick="downloadPDF()">&#11015; Download as PDF</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+var EMOJIS = [
+  {e:'&#127822;',l:'Apple'},{e:'&#127820;',l:'Banana'},{e:'&#128663;',l:'Car'},
+  {e:'&#128652;',l:'Bus'},{e:'&#128054;',l:'Dog'},{e:'&#128049;',l:'Cat'},
+  {e:'&#9999;',l:'Pencil'},{e:'&#128216;',l:'Book'},{e:'&#128661;',l:'Taxi'},
+  {e:'&#128047;',l:'Tiger'},{e:'&#127815;',l:'Grapes'},{e:'&#128221;',l:'Notepad'}
+];
+
+var SORT_ITEMS = [
+  {n:'Mango',c:'fruits'},{n:'Eagle',c:'animals'},{n:'Pencil',c:'supplies'},
+  {n:'Train',c:'vehicles'},{n:'Orange',c:'fruits'},{n:'Elephant',c:'animals'},
+  {n:'Ruler',c:'supplies'},{n:'Bicycle',c:'vehicles'},{n:'Grapes',c:'fruits'},
+  {n:'Parrot',c:'animals'},{n:'Eraser',c:'supplies'},{n:'Helicopter',c:'vehicles'},
+  {n:'Strawberry',c:'fruits'},{n:'Shark',c:'animals'},{n:'Notebook',c:'supplies'},
+  {n:'Bus',c:'vehicles'},{n:'Lemon',c:'fruits'},{n:'Lion',c:'animals'},
+  {n:'Compass',c:'supplies'},{n:'Rocket',c:'vehicles'}
+];
+var SORT_BOXES = [
+  {id:'fruits',label:'Fruits',cls:'fruits'},
+  {id:'animals',label:'Animals',cls:'animals'},
+  {id:'supplies',label:'School Supplies',cls:'supplies'},
+  {id:'vehicles',label:'Vehicles',cls:'vehicles'}
+];
+
+var DATA_Q = [
+  {id:'dc0',label:'Cluster 1 - Students who share the SAME subject AND sport:'},
+  {id:'dc1',label:'Cluster 2 - Another group of students with similar interests:'},
+  {id:'dc2',label:'Cluster 3 - A third cluster you identified:'},
+  {id:'dc3',label:'How many clusters did you find? Explain your reasoning:'}
+];
+
+var MCQ = [
+  {q:'What is clustering in AI?',
+   o:['Teaching a computer with labelled data','Grouping similar items without being told group names','Counting numbers in a dataset','Drawing pictures with a computer'],a:1},
+  {q:'Clustering is a type of:',
+   o:['Supervised Learning','Reinforcement Learning','Unsupervised Learning','Manual Learning'],a:2},
+  {q:'Which is the BEST real-life example of clustering?',
+   o:['A student scores 90 marks','A library organises books into Science, Fiction and History','A calculator adds two numbers','A printer prints a document'],a:1},
+  {q:'Which app uses clustering to suggest videos?',
+   o:['WhatsApp','Google Maps','YouTube','Microsoft Word'],a:2},
+  {q:'In clustering, the computer creates groups:',
+   o:['Only when a teacher tells it to','On its own, by finding similarities','Using a fixed list of names','By counting items'],a:1}
+];
+var TF = [
+  {q:'Clustering always requires labelled data.',a:false},
+  {q:'YouTube uses clustering to suggest videos.',a:true},
+  {q:'In clustering, the AI is told the group names beforehand.',a:false}
+];
+var SA = [
+  {q:'Define clustering in your own words and give one real-life example.',
+   m:'Clustering means grouping similar things together. Example: sorting books by subject (Science, Art, History).'},
+  {q:'Explain how Netflix uses clustering. Why is this helpful?',
+   m:'Netflix groups users who watch similar shows and suggests new content. This helps viewers find programmes they enjoy.'}
+];
+var ET = [
+  {q:'What is clustering? Write in ONE sentence.'},
+  {q:'Give ONE real-life example of clustering.'},
+  {q:'Name ONE app that uses clustering and explain how.'}
+];
+
+var state = {
+  name:'',grade:'',division:'',
+  emojiPlace:{},emojiNames:{},
+  sortPlace:{},
+  dataAns:{},hotAns:'',
+  mcqAns:{},tfAns:{},saAns:{},etAns:{},
+  sortScore:0,mcqScore:0,tfScore:0
+};
+var selEmoji=null,selItem=null;
+
+function goTo(n){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('screen-'+n).classList.add('active');
+  document.getElementById('progressBar').style.width=Math.round(n/6*100)+'%';
+  for(var i=0;i<=5;i++){
+    var d=document.getElementById('dot'+i);
+    d.className='step-dot'+(i<n?' done':i===n-1?' active':'');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startActivities(){
+  var name=document.getElementById('studentName').value.trim();
+  var grade=document.getElementById('studentGrade').value;
+  var div=document.getElementById('studentDivision').value;
+  if(!name){alert('Please enter your name!');return;}
+  if(!grade){alert('Please select your grade!');return;}
+  if(!div){alert('Please select your division!');return;}
+  state.name=name;state.grade=grade;state.division=div;
+  goTo(1);
+}
+
+/* ---- ACTIVITY 1 ---- */
+function initEmojis(){
+  var pool=document.getElementById('emojiPool');
+  pool.innerHTML='';
+  for(var i=0;i<EMOJIS.length;i++){
+    (function(idx){
+      var chip=document.createElement('div');
+      chip.className='emoji-chip'+(state.emojiPlace[idx]!==undefined?' placed':selEmoji===idx?' selected':'');
+      chip.innerHTML=EMOJIS[idx].e+'<span style="font-size:.68rem;color:#64748b;font-weight:700">'+EMOJIS[idx].l+'</span>';
+      chip.onclick=function(){pickEmoji(idx);};
+      pool.appendChild(chip);
+    })(i);
+  }
+  var grid=document.getElementById('clusterGrid');
+  grid.innerHTML='';
+  for(var ci=0;ci<4;ci++){
+    (function(cidx){
+      var placed=[];
+      for(var k in state.emojiPlace){if(state.emojiPlace[k]===cidx)placed.push(parseInt(k));}
+      var box=document.createElement('div');
+      box.className='cluster-box'+(placed.length?' has-items':'');
+      var inp=document.createElement('input');
+      inp.className='cluster-name-input';
+      inp.placeholder='Name this group...';
+      inp.value=state.emojiNames[cidx]||'';
+      inp.onchange=(function(c){return function(){state.emojiNames[c]=this.value;};})(cidx);
+      inp.onclick=function(e){e.stopPropagation();};
+      box.appendChild(inp);
+      var items=document.createElement('div');
+      items.className='cluster-items';
+      placed.forEach(function(eidx){
+        var pc=document.createElement('div');
+        pc.className='placed-chip';
+        pc.innerHTML=EMOJIS[eidx].e;
+        pc.onclick=(function(ei){return function(e){e.stopPropagation();removeEmoji(ei);};})(eidx);
+        items.appendChild(pc);
+      });
+      box.appendChild(items);
+      box.onclick=function(){dropEmoji(cidx);};
+      grid.appendChild(box);
+    })(ci);
+  }
+}
+function pickEmoji(idx){if(state.emojiPlace[idx]!==undefined)return;selEmoji=(selEmoji===idx)?null:idx;initEmojis();}
+function dropEmoji(cidx){if(selEmoji===null)return;state.emojiPlace[selEmoji]=cidx;selEmoji=null;initEmojis();}
+function removeEmoji(eidx){delete state.emojiPlace[eidx];initEmojis();}
+
+/* ---- ACTIVITY 2 ---- */
+function initSort(){
+  var bank=document.getElementById('itemsBank');
+  bank.innerHTML='';
+  for(var i=0;i<SORT_ITEMS.length;i++){
+    (function(item){
+      var chip=document.createElement('div');
+      chip.className='item-chip'+(state.sortPlace[item.n]?' placed':selItem===item.n?' selected':'');
+      chip.textContent=item.n;
+      chip.onclick=function(){pickItem(item.n);};
+      bank.appendChild(chip);
+    })(SORT_ITEMS[i]);
+  }
+  var grid=document.getElementById('sortGrid');
+  grid.innerHTML='';
+  SORT_BOXES.forEach(function(box){
+    var placed=[];
+    for(var k in state.sortPlace){if(state.sortPlace[k]===box.id)placed.push(k);}
+    var div=document.createElement('div');
+    div.className='sort-box '+box.cls;
+    var title=document.createElement('div');
+    title.className='sort-box-title';
+    title.textContent=box.label;
+    div.appendChild(title);
+    var items=document.createElement('div');
+    items.className='sort-items';
+    placed.forEach(function(name){
+      var pi=document.createElement('div');
+      pi.className='placed-item';
+      pi.textContent=name;
+      pi.onclick=(function(n){return function(e){e.stopPropagation();removeItem(n);};})(name);
+      items.appendChild(pi);
+    });
+    div.appendChild(items);
+    div.onclick=function(e){if(e.target.classList.contains('placed-item'))return;dropItem(box.id);};
+    grid.appendChild(div);
+  });
+  document.getElementById('act2ScoreRow').style.display='none';
+}
+function pickItem(name){if(state.sortPlace[name])return;selItem=(selItem===name)?null:name;initSort();}
+function dropItem(catId){if(!selItem)return;state.sortPlace[selItem]=catId;selItem=null;initSort();}
+function removeItem(name){delete state.sortPlace[name];initSort();}
+function checkSort(){
+  var score=0;
+  SORT_ITEMS.forEach(function(item){if(state.sortPlace[item.n]===item.c)score++;});
+  state.sortScore=score;
+  document.getElementById('act2ScoreVal').textContent=score;
+  document.getElementById('act2ScoreRow').style.display='block';
+  SORT_ITEMS.forEach(function(item){
+    var placed=state.sortPlace[item.n];
+    if(!placed)return;
+    var els=document.querySelectorAll('#sortGrid .sort-box.'+placed+' .placed-item');
+    els.forEach(function(el){
+      if(el.textContent===item.n){
+        el.style.background=(placed===item.c)?'#dcfce7':'#fee2e2';
+        el.style.border=(placed===item.c)?'1.5px solid #22c55e':'1.5px solid #ef4444';
+      }
+    });
+  });
+  setTimeout(function(){goTo(3);},1400);
+}
+
+/* ---- ACTIVITY 3 ---- */
+function initData(){
+  var cont=document.getElementById('dataInputs');
+  cont.innerHTML='';
+  DATA_Q.forEach(function(dq){
+    var g=document.createElement('div');g.className='cluster-input-group';
+    var lbl=document.createElement('label');lbl.textContent=dq.label;
+    var ta=document.createElement('textarea');
+    ta.className='big-textarea';ta.id=dq.id;ta.placeholder='Write your answer here...';
+    ta.value=state.dataAns[dq.id]||'';
+    ta.onchange=(function(id){return function(){state.dataAns[id]=this.value;};})(dq.id);
+    g.appendChild(lbl);g.appendChild(ta);cont.appendChild(g);
+  });
+}
+
+/* ---- ACTIVITY 4 ---- */
+function initAssessment(){
+  var mcqBox=document.getElementById('mcqBox');
+  mcqBox.innerHTML='';
+  MCQ.forEach(function(q,qi){
+    var blk=document.createElement('div');blk.className='q-block';
+    var hdr=document.createElement('div');
+    hdr.innerHTML='<span class="q-num">'+(qi+1)+'</span><span class="q-text">'+q.q+'</span>';
+    blk.appendChild(hdr);
+    var opts=document.createElement('div');opts.className='opts';
+    q.o.forEach(function(opt,oi){
+      var lbl=document.createElement('label');
+      lbl.className='opt-label'+(state.mcqAns[qi]===oi?' chosen':'');
+      var radio=document.createElement('input');
+      radio.type='radio';radio.name='mcq'+qi;radio.value=oi;
+      if(state.mcqAns[qi]===oi)radio.checked=true;
+      radio.onchange=(function(q2,o2){return function(){
+        state.mcqAns[q2]=o2;
+        blk.querySelectorAll('.opt-label').forEach(function(l){l.classList.remove('chosen');});
+        this.parentElement.classList.add('chosen');
+      };})(qi,oi);
+      var span=document.createElement('span');
+      span.textContent=String.fromCharCode(65+oi)+'. '+opt;
+      lbl.appendChild(radio);lbl.appendChild(span);opts.appendChild(lbl);
+    });
+    blk.appendChild(opts);mcqBox.appendChild(blk);
+  });
+
+  var tfBox=document.getElementById('tfBox');
+  tfBox.innerHTML='';
+  TF.forEach(function(q,qi){
+    var blk=document.createElement('div');blk.className='q-block';
+    blk.innerHTML='<span class="q-num">'+(qi+1)+'</span><span class="q-text">'+q.q+'</span>';
+    var row=document.createElement('div');row.className='tf-row';
+    var bt=document.createElement('button');
+    bt.className='tf-btn t-btn'+(state.tfAns[qi]===true?' active':'');
+    bt.id='tf-'+qi+'-t';bt.textContent='True';
+    bt.onclick=(function(i){return function(){setTF(i,true);};})(qi);
+    var bf=document.createElement('button');
+    bf.className='tf-btn f-btn'+(state.tfAns[qi]===false?' active':'');
+    bf.id='tf-'+qi+'-f';bf.textContent='False';
+    bf.onclick=(function(i){return function(){setTF(i,false);};})(qi);
+    row.appendChild(bt);row.appendChild(bf);blk.appendChild(row);tfBox.appendChild(blk);
+  });
+
+  var saBox=document.getElementById('saBox');
+  saBox.innerHTML='';
+  SA.forEach(function(q,qi){
+    var blk=document.createElement('div');blk.className='q-block';
+    blk.innerHTML='<span class="q-num">'+(qi+1)+'</span><span class="q-text">'+q.q+'</span>';
+    var ta=document.createElement('textarea');
+    ta.className='short-ans';ta.placeholder='Write your answer here...';
+    ta.value=state.saAns[qi]||'';
+    ta.onchange=(function(i){return function(){state.saAns[i]=this.value;};})(qi);
+    blk.appendChild(ta);saBox.appendChild(blk);
+  });
+
+  var etBox=document.getElementById('etBox');
+  etBox.innerHTML='';
+  ET.forEach(function(q,qi){
+    var blk=document.createElement('div');blk.className='q-block';
+    blk.innerHTML='<span class="q-num">'+(qi+1)+'</span><span class="q-text">'+q.q+'</span>';
+    var ta=document.createElement('textarea');
+    ta.className='short-ans';ta.style.minHeight='60px';ta.placeholder='Your answer...';
+    ta.value=state.etAns[qi]||'';
+    ta.onchange=(function(i){return function(){state.etAns[i]=this.value;};})(qi);
+    blk.appendChild(ta);etBox.appendChild(blk);
+  });
+}
+
+function setTF(qi,val){
+  state.tfAns[qi]=val;
+  document.getElementById('tf-'+qi+'-t').className='tf-btn t-btn'+(val===true?' active':'');
+  document.getElementById('tf-'+qi+'-f').className='tf-btn f-btn'+(val===false?' active':'');
+}
+
+/* ---- SUBMIT ---- */
+function submitAll(){
+  SA.forEach(function(_,qi){var els=document.querySelectorAll('#saBox textarea');if(els[qi])state.saAns[qi]=els[qi].value;});
+  ET.forEach(function(_,qi){var els=document.querySelectorAll('#etBox textarea');if(els[qi])state.etAns[qi]=els[qi].value;});
+  DATA_Q.forEach(function(dq){var el=document.getElementById(dq.id);if(el)state.dataAns[dq.id]=el.value;});
+  var hot=document.getElementById('hotAnswer');if(hot)state.hotAns=hot.value;
+
+  var mcq=0;MCQ.forEach(function(q,i){if(state.mcqAns[i]===q.a)mcq++;});
+  var tf=0;TF.forEach(function(q,i){if(state.tfAns[i]===q.a)tf++;});
+  state.mcqScore=mcq;state.tfScore=tf;
+  var pct=Math.round((mcq+tf)/(MCQ.length+TF.length)*100);
+
+  document.getElementById('finalScore').textContent=pct+'%';
+  document.getElementById('resMCQ').textContent=mcq+'/'+MCQ.length;
+  document.getElementById('resTF').textContent=tf+'/'+TF.length;
+  document.getElementById('resSort').textContent=state.sortScore+'/20';
+
+  var g=pct>=85?['Excellent! Outstanding work!']:pct>=70?['Good Job! Great effort.']:pct>=50?['Keep Going! Review the lesson.']:['Needs Review. Re-read the key concepts.'];
+  document.getElementById('finalGrade').textContent=pct>=85?'Excellent!':pct>=70?'Good Job!':pct>=50?'Keep Going!':'Needs Review';
+  document.getElementById('finalMsg').textContent=g[0];
+  document.getElementById('feedbackBox').innerHTML='<strong>Your Score:</strong> '+pct+'% on auto-marked questions.<br>MCQ: '+mcq+'/'+MCQ.length+' | True/False: '+tf+'/'+TF.length+' | Sort: '+state.sortScore+'/20<br><em>Short answer and data clustering are for teacher review.</em>';
+
+  document.getElementById('reportOutput').innerHTML=buildReportHTML();
+  goTo(5);
+}
+
+/* ---- BUILD REPORT ---- */
+function buildReportHTML(){
+  var now=new Date();
+  var ds=now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  var pct=Math.round((state.mcqScore+state.tfScore)/(MCQ.length+TF.length)*100);
+
+  var emojiGroups={};
+  for(var ei in state.emojiPlace){
+    var ci=state.emojiPlace[ei];
+    if(!emojiGroups[ci])emojiGroups[ci]=[];
+    emojiGroups[ci].push(EMOJIS[parseInt(ei)].l);
+  }
+  var correctItems=SORT_ITEMS.filter(function(i){return state.sortPlace[i.n]===i.c;});
+  var wrongItems=SORT_ITEMS.filter(function(i){return state.sortPlace[i.n]&&state.sortPlace[i.n]!==i.c;});
+  var unplaced=SORT_ITEMS.filter(function(i){return !state.sortPlace[i.n];});
+
+  function pill(cls,txt){return '<span class="pill '+cls+'">'+txt+'</span>';}
+  function rrow(l,v){return '<div class="r-row"><span class="r-lbl">'+l+'</span><span class="r-val">'+v+'</span></div>';}
+  function rblk(q,a,note,style){
+    var s=style?' style="'+style+'"':'';
+    return '<div class="r-blk"'+s+'><div class="rq">'+q+'</div><div class="ra">'+a+'</div>'+(note?'<div class="rn">'+note+'</div>':'')+'</div>';
+  }
+
+  var s1=rrow('Name:','<strong>'+state.name+'</strong>')+
+          rrow('Grade / Division:',state.grade+' - Division '+state.division)+
+          rrow('Topic:','Clustering in Artificial Intelligence (AI)')+
+          rrow('Date &amp; Time:',ds+' at '+ts);
+
+  var s2=rrow('MCQ (5 marks):','<strong>'+state.mcqScore+'/5</strong>'+pill(state.mcqScore>=4?'ok':state.mcqScore>=3?'part':'no',state.mcqScore>=4?'Excellent':state.mcqScore>=3?'Good':'Review'))+
+          rrow('True/False (3 marks):','<strong>'+state.tfScore+'/3</strong>'+pill(state.tfScore===3?'ok':state.tfScore===2?'part':'no',state.tfScore===3?'Full marks':state.tfScore===2?'Good':'Review'))+
+          rrow('Sort Activity (20 marks):','<strong>'+state.sortScore+'/20</strong>'+pill(state.sortScore>=18?'ok':state.sortScore>=14?'part':'no',state.sortScore>=18?'Excellent':state.sortScore>=14?'Good':'Review'))+
+          '<div style="border-top:1px solid #e2e8f0;margin:8px 0;"></div>'+
+          rrow('Auto-Marked Total:','<strong style="font-size:1.1rem;color:#0d9488;">'+(state.mcqScore+state.tfScore)+'/'+(MCQ.length+TF.length)+'</strong>')+
+          rrow('Short Answer &amp; Data Clustering:','<em style="color:#64748b;">For teacher review</em>');
+
+  var s3='';
+  for(var ci in emojiGroups){
+    s3+=rblk((state.emojiNames[ci]||'Group '+(parseInt(ci)+1))+' <span style="color:#64748b;font-weight:400;">(student-named)</span>',emojiGroups[ci].join(' | '));
+  }
+  if(!s3)s3='<p style="color:#64748b;font-size:.88rem;font-style:italic;">No groupings recorded.</p>';
+  s3+='<div class="r-note"><strong>Expected:</strong> Fruits (Apple,Banana,Grapes) | Vehicles (Car,Bus,Taxi) | Animals (Dog,Cat,Tiger) | School Items (Pencil,Book,Notepad)</div>';
+
+  var s4='';
+  if(correctItems.length)s4+=rblk('<span style="color:#15803d;">Correct ('+correctItems.length+')</span>',correctItems.map(function(i){return i.n;}).join(', '));
+  if(wrongItems.length)s4+=rblk('<span style="color:#b91c1c;">Incorrect ('+wrongItems.length+')</span>',wrongItems.map(function(i){return i.n+' placed in '+state.sortPlace[i.n]+' (correct: '+i.c+')';}).join(', '));
+  if(unplaced.length)s4+=rblk('<span style="color:#64748b;">Not placed ('+unplaced.length+')</span>',unplaced.map(function(i){return i.n;}).join(', '));
+  if(!s4)s4='<p style="color:#15803d;font-weight:700;">All items correctly sorted!</p>';
+
+  var s5='';
+  DATA_Q.forEach(function(dq){s5+=rblk(dq.label,state.dataAns[dq.id]||'<em style="color:#64748b;">Not answered</em>');});
+  if(state.hotAns)s5+=rblk('HOT Question: Could AI clustering be wrong or unfair?',state.hotAns,'','border-color:#f59e0b;background:#fef3c7;');
+  s5+='<div class="r-note"><strong>Expected clusters:</strong> A: Rohan,Karthik,Yusuf (Science+Cricket) | B: Aisha,Hana,Priya (Maths+Swimming) | C: Fatima,Meera (Art+Badminton) | D: Ali,Omar (CS+Football)</div>';
+
+  var s6='';
+  MCQ.forEach(function(q,qi){
+    var chosen=state.mcqAns[qi],correct=chosen===q.a;
+    s6+=rblk('Q'+(qi+1)+': '+q.q,(chosen!==undefined?'Student: <strong>'+String.fromCharCode(65+chosen)+'. '+q.o[chosen]+'</strong>'+pill(correct?'ok':'no',correct?'Correct':'Wrong'):'<em style="color:#64748b;">Not answered</em>'),(!correct&&chosen!==undefined?'Correct: '+String.fromCharCode(65+q.a)+'. '+q.o[q.a]:''));
+  });
+
+  var s7='';
+  TF.forEach(function(q,qi){
+    var chosen=state.tfAns[qi],correct=chosen===q.a;
+    s7+=rblk('Q'+(qi+1)+': '+q.q,(chosen!==undefined?'Student: <strong>'+(chosen?'True':'False')+'</strong>'+pill(correct?'ok':'no',correct?'Correct':'Wrong'):'<em style="color:#64748b;">Not answered</em>'),(!correct&&chosen!==undefined?'Correct: '+(q.a?'True':'False'):''));
+  });
+
+  var s8='';
+  SA.forEach(function(q,qi){s8+=rblk('Q'+(qi+1)+': '+q.q,state.saAns[qi]||'<em style="color:#64748b;">Not answered</em>','<strong>Model:</strong> '+q.m);});
+  s8+='<div class="r-note"><strong>Teacher Marks:</strong> SA Q1: ____/2 &nbsp; SA Q2: ____/2 &nbsp; Data Clustering: ____/4 &nbsp; HOT: ____/3 &nbsp; <strong>Teacher Total: ____/11</strong></div>';
+
+  var s9='';
+  ET.forEach(function(q,qi){s9+=rblk('Q'+(qi+1)+': '+q.q,state.etAns[qi]||'<em style="color:#64748b;">Not answered</em>');});
+
+  var s10='<div style="padding:12px 16px;background:#fff;border:1.5px dashed #f59e0b;border-radius:8px;min-height:60px;font-size:.88rem;color:#64748b;font-style:italic;">Teacher to add comments after reviewing short answers and data clustering.</div>'+
+           '<div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap;font-size:.85rem;font-weight:700;">'+
+           '<span>Overall Grade: ___________</span><span>Signature: ___________________</span><span>Date: ___________</span></div>';
+
+  function sec(title,content,bg){
+    return '<div class="r-sec"'+(bg?' style="background:'+bg+';"':'')+'><h3>'+title+'</h3>'+content+'</div>';
+  }
+
+  return '<div>'+
+    '<div class="r-hdr">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">'+
+        '<div><h2>Student Activity Report - Clustering in AI</h2>'+
+        '<p>Sharjah Indian School - Juwaiza | Computer Science / AI | '+ds+' at '+ts+'</p></div>'+
+        '<div style="text-align:right;"><div style="font-size:2rem;font-weight:900;color:#f59e0b;">'+pct+'%</div>'+
+        '<div style="font-size:.72rem;color:rgba(255,255,255,.55);font-weight:700;">Auto-Marked Score</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="r-body">'+
+      sec('Student Information',s1)+
+      sec('Score Summary',s2)+
+      sec('Activity 1 - Emoji Grouping',s3)+
+      sec('Activity 2 - Sort the Items ('+state.sortScore+'/20)',s4)+
+      sec('Activity 3 - Data Clustering',s5)+
+      sec('Activity 4 - MCQ Answers',s6)+
+      sec('True / False Answers',s7)+
+      sec('Short Answer Responses (Teacher Review)',s8)+
+      sec('Exit Ticket Responses',s9)+
+      sec('Teacher Comments',s10,'#fffbf0')+
+    '</div>'+
+  '</div>';
+}
+
+/* ---- DOWNLOAD AS PDF ---- */
+/* 
+  Approach: build a self-contained HTML file with all styles inline,
+  then download it as a .html file. The file auto-triggers window.print()
+  on open so the user just selects "Save as PDF" in the print dialog.
+  Zero external dependencies - works on any school network.
+*/
+function downloadPDF(){
+  var btn=document.getElementById('dlBtn');
+  btn.textContent='Building report...';
+  btn.disabled=true;
+
+  var now=new Date();
+  var ds=now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  var pct=Math.round((state.mcqScore+state.tfScore)/(MCQ.length+TF.length)*100);
+
+  /* Build inline-styled report content (no CSS classes, no variables) */
+  var emojiGroups={};
+  for(var ei in state.emojiPlace){
+    var ci=state.emojiPlace[ei];
+    if(!emojiGroups[ci])emojiGroups[ci]=[];
+    emojiGroups[ci].push(EMOJIS[parseInt(ei)].l);
+  }
+  var correctItems=SORT_ITEMS.filter(function(i){return state.sortPlace[i.n]===i.c;});
+  var wrongItems=SORT_ITEMS.filter(function(i){return state.sortPlace[i.n]&&state.sortPlace[i.n]!==i.c;});
+  var unplaced=SORT_ITEMS.filter(function(i){return !state.sortPlace[i.n];});
+
+  var F='font-family:Arial,sans-serif;';
+  function pill(ok,txt){
+    var bg=ok?'#dcfce7':'#fee2e2',col=ok?'#15803d':'#b91c1c';
+    return '<span style="display:inline-block;padding:1px 7px;border-radius:99px;font-size:9pt;font-weight:800;background:'+bg+';color:'+col+';margin-left:5px;">'+txt+'</span>';
+  }
+  function row(l,v){return '<tr><td style="padding:5px 10px;color:#64748b;font-weight:700;width:160px;vertical-align:top;">'+l+'</td><td style="padding:5px 10px;color:#1a3a4a;">'+v+'</td></tr>';}
+  function tbl(rows){return '<table style="width:100%;border-collapse:collapse;margin-bottom:10px;">'+rows+'</table>';}
+  function blk(q,a,note,bg){
+    var bgs=bg?bg:'#f8fafc';
+    return '<div style="background:'+bgs+';border-radius:6px;padding:9px 13px;margin-bottom:8px;border:1px solid #e2e8f0;">'+
+           '<div style="font-size:9pt;font-weight:700;color:#1a3a4a;margin-bottom:3px;">'+q+'</div>'+
+           '<div style="font-size:10pt;font-weight:600;color:#0d9488;">'+a+'</div>'+
+           (note?'<div style="font-size:8pt;color:#64748b;margin-top:2px;">'+note+'</div>':'')+
+           '</div>';
+  }
+  function sec(title,content,bg){
+    return '<div style="padding:14px 20px;border-bottom:1px solid #e2e8f0;'+(bg?'background:'+bg+';':'')+'">'+
+           '<div style="font-size:8pt;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#0d9488;margin-bottom:10px;">'+title+'</div>'+
+           content+'</div>';
+  }
+
+  var sec1=tbl(
+    row('Name:','<strong>'+state.name+'</strong>')+
+    row('Grade / Division:',state.grade+' - Division '+state.division)+
+    row('Topic:','Clustering in Artificial Intelligence (AI)')+
+    row('Date &amp; Time:',ds+' at '+ts)
+  );
+  var sec2=tbl(
+    row('MCQ (5 marks):','<strong>'+state.mcqScore+'/5</strong>'+pill(state.mcqScore>=4,state.mcqScore>=4?'Excellent':state.mcqScore>=3?'Good':'Review'))+
+    row('True/False (3 marks):','<strong>'+state.tfScore+'/3</strong>'+pill(state.tfScore===3,state.tfScore===3?'Full marks':state.tfScore===2?'Good':'Review'))+
+    row('Sort Activity (20 marks):','<strong>'+state.sortScore+'/20</strong>'+pill(state.sortScore>=18,state.sortScore>=18?'Excellent':state.sortScore>=14?'Good':'Review'))+
+    row('Auto-Marked Total:','<strong style="font-size:13pt;color:#0d9488;">'+(state.mcqScore+state.tfScore)+'/'+(MCQ.length+TF.length)+'</strong>')+
+    row('Short Answer &amp; Data Clustering:','<em style="color:#64748b;">For teacher review</em>')
+  );
+
+  var sec3='';
+  for(var ci2 in emojiGroups){
+    sec3+=blk((state.emojiNames[ci2]||'Group '+(parseInt(ci2)+1))+' (student-named)',emojiGroups[ci2].join(' | '));
+  }
+  if(!sec3)sec3='<p style="color:#64748b;font-style:italic;">No groupings recorded.</p>';
+  sec3+='<div style="padding:7px 11px;background:#f0f9ff;border-radius:5px;font-size:8pt;color:#64748b;border:1px solid #e2e8f0;"><strong>Expected:</strong> Fruits | Vehicles | Animals | School Items</div>';
+
+  var sec4='';
+  if(correctItems.length)sec4+=blk('Correct placements ('+correctItems.length+')',correctItems.map(function(i){return i.n;}).join(', '),'','#f0fdf4');
+  if(wrongItems.length)sec4+=blk('Incorrect placements ('+wrongItems.length+')',wrongItems.map(function(i){return i.n+' placed in '+state.sortPlace[i.n]+' (correct: '+i.c+')';}).join(', '),'','#fff0f0');
+  if(unplaced.length)sec4+=blk('Not placed ('+unplaced.length+')',unplaced.map(function(i){return i.n;}).join(', '));
+  if(!sec4)sec4='<p style="color:#15803d;font-weight:700;">All items correctly sorted!</p>';
+
+  var sec5='';
+  DATA_Q.forEach(function(dq){sec5+=blk(dq.label,state.dataAns[dq.id]||'<em style="color:#64748b;">Not answered</em>');});
+  if(state.hotAns)sec5+=blk('HOT Question: Could AI clustering be wrong or unfair?',state.hotAns,'','#fef3c7');
+
+  var sec6='';
+  MCQ.forEach(function(q,qi){
+    var chosen=state.mcqAns[qi],correct=chosen===q.a;
+    sec6+=blk('Q'+(qi+1)+': '+q.q,(chosen!==undefined?'Student: <strong>'+String.fromCharCode(65+chosen)+'. '+q.o[chosen]+'</strong>'+pill(correct,correct?'Correct':'Wrong'):'<em style="color:#64748b;">Not answered</em>'),(!correct&&chosen!==undefined?'Correct: '+String.fromCharCode(65+q.a)+'. '+q.o[q.a]:''));
+  });
+
+  var sec7='';
+  TF.forEach(function(q,qi){
+    var chosen=state.tfAns[qi],correct=chosen===q.a;
+    sec7+=blk('Q'+(qi+1)+': '+q.q,(chosen!==undefined?'Student: <strong>'+(chosen?'True':'False')+'</strong>'+pill(correct,correct?'Correct':'Wrong'):'<em style="color:#64748b;">Not answered</em>'),(!correct&&chosen!==undefined?'Correct: '+(q.a?'True':'False'):''));
+  });
+
+  var sec8='';
+  SA.forEach(function(q,qi){sec8+=blk('Q'+(qi+1)+': '+q.q,state.saAns[qi]||'<em style="color:#64748b;">Not answered</em>','<strong>Model:</strong> '+q.m);});
+  sec8+='<div style="padding:8px 12px;background:#f8fafc;border-radius:5px;font-size:8pt;color:#64748b;border:1.5px dashed #e2e8f0;"><strong>Teacher Marks:</strong> SA Q1: ____/2  SA Q2: ____/2  Data Clustering: ____/4  HOT: ____/3  <strong>Total: ____/11</strong></div>';
+
+  var sec9='';
+  ET.forEach(function(q,qi){sec9+=blk('Q'+(qi+1)+': '+q.q,state.etAns[qi]||'<em style="color:#64748b;">Not answered</em>');});
+
+  var sec10='<div style="padding:12px;border:1.5px dashed #f59e0b;border-radius:6px;min-height:56px;font-size:9pt;color:#64748b;font-style:italic;">Teacher comments here.</div>'+
+             '<div style="margin-top:10px;font-size:9pt;font-weight:700;">Overall Grade: ___________ &nbsp;&nbsp; Signature: ___________________ &nbsp;&nbsp; Date: ___________</div>';
+
+  var bodyContent=
+    sec('Student Information',sec1)+
+    sec('Score Summary',sec2)+
+    sec('Activity 1 - Emoji Grouping',sec3)+
+    sec('Activity 2 - Sort the Items ('+state.sortScore+'/20)',sec4)+
+    sec('Activity 3 - Data Clustering',sec5)+
+    sec('Activity 4 - MCQ Answers',sec6)+
+    sec('True / False Answers',sec7)+
+    sec('Short Answer Responses',sec8)+
+    sec('Exit Ticket Responses',sec9)+
+    sec('Teacher Comments',sec10,'#fffbf0');
+
+  var safeName=state.name.replace(/[^a-zA-Z0-9]/g,'_');
+  var title='AI Report - '+state.name+' - '+state.grade+' '+state.division;
+
+  /* Full standalone HTML - prints automatically when opened */
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>'+title+'</title>'+
+    '<style>'+
+      '*{margin:0;padding:0;box-sizing:border-box;}'+
+      'body{font-family:Arial,sans-serif;color:#1a3a4a;background:#fff;padding:0;}'+
+      '@page{size:A4;margin:12mm 14mm;}'+
+      '@media print{body{padding:0;}#no-print{display:none!important;}}'+
+    '</style>'+
+    '</head><body>'+
+    '<div id="no-print" style="background:#1a3a4a;color:#fff;padding:14px 20px;text-align:center;font-family:Arial;font-size:14px;">'+
+      '<strong>To save as PDF:</strong> Press Ctrl+P (or Cmd+P on Mac) &rarr; Change destination to <strong>"Save as PDF"</strong> &rarr; Click Save'+
+    '</div>'+
+    '<div style="padding:20px 24px;">'+
+      '<div style="background:#1a3a4a;color:#fff;padding:18px 22px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:flex-start;">'+
+        '<div>'+
+          '<div style="font-size:16px;font-weight:900;margin-bottom:3px;">Student Activity Report - Clustering in AI</div>'+
+          '<div style="font-size:10px;color:rgba(255,255,255,.65);">Sharjah Indian School - Juwaiza | '+ds+' at '+ts+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div style="font-size:28px;font-weight:900;color:#f59e0b;">'+pct+'%</div>'+
+          '<div style="font-size:8px;color:rgba(255,255,255,.5);">Auto-Marked Score</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">'+
+        bodyContent+
+      '</div>'+
+    '</div>'+
+    '</body></html>';
+
+  /* Download as .html - works on every browser, no CDN, no pop-ups blocked */
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='AI_Report_'+safeName+'_'+state.grade.replace(/\s/g,'')+state.division+'.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+
+  btn.textContent='Download as PDF';
+  btn.disabled=false;
+}
+
+window.onload=function(){
+  initEmojis();
+  initSort();
+  initData();
+  initAssessment();
+};
+</script>
+</body>
+</html>
